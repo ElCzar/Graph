@@ -96,7 +96,7 @@ bool Graph<T>::insertVertice(T vert) {
 }
 
 template <class T>
-bool Graph<T>::insertVertice(T ori, T des, int cos) {
+bool Graph<T>::insertArista(T ori, T des, int cos) {
     bool res = false;
     if(!buscarArista(ori, des)) {
         int i_ori = buscarVertice(ori);
@@ -125,11 +125,12 @@ bool Graph<T>::deleteVertice(T vert) {
 
         if (ind == i_vert) {
             posE = itA;
-        } else if(itA->size() > 0){
+        } else {
             typename std::list< std::pair<int,T> >::iterator itList, posEE, itListEnd;
             std::list< std::pair<int,T> > list = *itA;
             itList = list.begin();
             itListEnd = list.end();
+            bool encontrado = false;
 
             for (; itList != itListEnd; itList++) {
                 std::pair<int,T> vertDes = *itList;
@@ -137,10 +138,11 @@ bool Graph<T>::deleteVertice(T vert) {
 
                 if (i_vertDes == i_vert) {
                     posEE = itList;
+                    encontrado = true;
                 }
             }
 
-            itA->erase(posEE);
+            if (encontrado) itA->erase(posEE);
         }
 
     }
@@ -205,7 +207,7 @@ int Graph<T>::printPath(std::vector<T> prev, T ori, T des) {
     int i_ori = buscarVertice(ori);
     int i_des = buscarVertice(des);
 
-    if (i_ori == -1 || i_des == -1 || prev.empty()) {
+    if (i_ori == -1 || i_des == -1 || prev[i_des] != vertices[i_des]) {
         std::cout << "No existe el camino vector vacio" << std::endl;
         return 0;
     }
@@ -251,7 +253,7 @@ template <class T>
 std::vector<T> Graph<T>::BFS(T vert) {
     // Lista de predecesores para poder luego hacer caminos
     std::vector<T> resultado;
-    resultado.resize(cantVertices(), NULL);
+    resultado.resize(cantVertices(), T());
 
     std::vector<bool> visitados;
 
@@ -297,7 +299,7 @@ template <class T>
 std::vector<T> Graph<T>::DFS(T vert) {
     // Lista de predecesores para poder luego hacer caminos
     std::vector<T> resultado;
-    resultado.resize(cantVertices(), NULL);
+    resultado.resize(cantVertices(), T());
 
     std::vector<bool> visitados;
 
