@@ -7,11 +7,6 @@ Graph<T>::Graph() {
     aristas = std::vector< std::list< std::pair<int,T> > >();
 }
 
-template <class T>
-Graph<T>::~Graph() {
-    delete vertices;
-    delete aristas;
-}
 
 // Setter
 template <class T>
