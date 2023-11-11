@@ -18,7 +18,6 @@ private:
 public:
     // Constructor
     Graph();
-    ~Graph();
 
     // Setter
     void setVertices(std::vector<T> v);
