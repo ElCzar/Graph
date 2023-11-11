@@ -38,7 +38,7 @@ public:
 
     // Insert
     bool insertVertice(T vert);
-    bool insertVertice(T ori, T des, int cos);
+    bool insertArista(T ori, T des, int cos);
 
     // Delete
     bool deleteVertice(T vert);
