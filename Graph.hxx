@@ -179,7 +179,7 @@ void Graph<T>::sortAristasByVector() {
                     return a.second < b.second;
                 }
         );
-        std::cout << aristas[i].front().second << " " << aristas[i].back().second << std::endl;
+
     }
 }
 
@@ -191,7 +191,7 @@ void Graph<T>::sortAristasByCost() {
                     return a.first < b.first;
                 }
         );
-        std::cout << aristas[i].front().first << " " << aristas[i].back().first << std::endl;
+
     }
 }
 
@@ -202,7 +202,7 @@ int Graph<T>::printPath(std::vector<T> prev, T ori, T des) {
     int i_ori = buscarVertice(ori);
     int i_des = buscarVertice(des);
 
-    if (i_ori == -1 || i_des == -1 || prev[i_des] != vertices[i_des]) {
+    if (i_ori == -1 || i_des == -1 || prev[i_ori] != vertices[i_ori]) {
         std::cout << "No existe el camino vector vacio" << std::endl;
         return 0;
     }
@@ -260,6 +260,7 @@ std::vector<T> Graph<T>::BFS(T vert) {
 
     visitados.resize(cantVertices(), false);
 
+    // Cola de pares <Vertice, Padre>
     std::queue<std::pair<int,int>> cola;
     std::pair<int, int> par = std::make_pair(i_vert, i_vert);
     cola.push(par);
@@ -306,6 +307,7 @@ std::vector<T> Graph<T>::DFS(T vert) {
 
     visitados.resize(cantVertices(), false);
 
+    // Pila de pares <Vertice, Padre>
     std::stack<std::pair<int, int>> pila;
     std::pair<int, int> par = std::make_pair(i_vert, i_vert);
     pila.push(par);
@@ -338,10 +340,137 @@ std::vector<T> Graph<T>::DFS(T vert) {
 
 template <class T>
 std::vector<T> Graph<T>::Prim(T vert) {
-    return std::vector<T>();
+    // Lista de predecesores para poder luego hacer caminos
+    std::vector<T> resultado;
+    resultado.resize(cantVertices(), T());
+
+    std::vector<bool> visitados;
+
+    int i_vert = buscarVertice(vert);
+
+    if (i_vert == -1) {
+        return resultado;
+    }
+
+    visitados.resize(cantVertices(), false);
+
+    // Lista de pares <Padre, <costo, destino> > ordenada por costo
+    std::list< std::pair<int, std::pair<int, T> > > aristasDisponibles;
+    std::pair<int, T> par = std::make_pair(0, vert);
+    std::pair<int, std::pair<int, T> > par2 = std::make_pair(i_vert, par);
+    aristasDisponibles.push_back(par2);
+
+    while (!aristasDisponibles.empty()) {
+        std::pair<int, std::pair<int, T> > parActual = aristasDisponibles.front();
+        aristasDisponibles.pop_front();
+
+        T actualT = parActual.second.second;
+        int actual = buscarVertice(actualT);
+
+        if (!visitados[actual]) {
+            std::cout << vertices[actual] << " ";
+            visitados[actual] = true;
+
+            int actualPadre = parActual.first;
+            resultado[actual] = vertices[actualPadre];
+
+            // Adiciona aristas disponibles
+            typename std::list< std::pair<int,T> >::iterator itList = aristas[actual].begin();
+            for (; itList != aristas[actual].end(); itList++) {
+                std::pair<int,T> vertDes = *itList;
+                std::pair<int, std::pair<int, T> > parN = std::make_pair(actual, vertDes);
+                aristasDisponibles.push_back(parN);
+            }
+
+            // Organiza la lista por costo y si son iguales entonces se decide por cual T es menor
+            aristasDisponibles.sort(
+                    [](std::pair<int, std::pair<int, T> > &a, std::pair<int, std::pair<int, T> > &b) {
+                        if (a.second.first == b.second.first) {
+                            return a.second.second < b.second.second;
+                        } else {
+                            return a.second.first < b.second.first;
+                        }
+                    }
+            );
+
+        }
+    }
+
+    std::cout << std::endl;
+
+    return resultado;
 }
 
 template <class T>
 std::vector<T> Graph<T>::Dijkstra(T vert) {
-    return std::vector<T>();
+    // Lista de predecesores para poder luego hacer caminos
+    std::vector<T> resultado;
+    resultado.resize(cantVertices(), T());
+    std::vector<bool> visitados;
+    std::vector<int> costos;
+
+    int i_vert = buscarVertice(vert);
+
+    if (i_vert == -1) {
+        return resultado;
+    }
+
+    visitados.resize(cantVertices(), false);
+    costos.resize(cantVertices(), INT_MAX);
+
+    resultado[i_vert] = vertices[i_vert];
+    costos[i_vert] = 0;
+
+    // Cola de pares <Padre, <costo, destino> > ordenada por costo
+    std::queue< std::pair<int, std::pair<int, T> > > aristasDisponibles;
+    std::pair<int, T> par = std::make_pair(0, vert);
+    std::pair<int, std::pair<int, T> > par2 = std::make_pair(i_vert, par);
+    aristasDisponibles.push(par2);
+
+    while(!aristasDisponibles.empty()) {
+        std::pair<int, std::pair<int, T> > parActual = aristasDisponibles.front();
+        aristasDisponibles.pop();
+
+        T actualT = parActual.second.second;
+        int actual = buscarVertice(actualT);
+        int costoActual = costos[actual];
+
+        int costoArista = parActual.second.first;
+        int costoPadre = costos[parActual.first];
+        int costoTotal = costoArista + costoPadre;
+
+        if(costoTotal < costoActual) {
+            costos[actual] = costoTotal;
+            resultado[actual] = vertices[parActual.first];
+        }
+
+        if (aristasDisponibles.empty()) {
+            int min = INT_MAX;
+            int minInd = -1;
+
+            for (int i = 0; i < costos.size(); ++i) {
+                if (costos[i] < min && !visitados[i]) {
+                    min = costos[i];
+                    minInd = i;
+                }
+            }
+
+            if (minInd != -1) {
+                visitados[minInd] = true;
+                std::cout << vertices[minInd] << " ";
+                // Adiciona las aristas del vertice actual
+                typename std::list< std::pair<int,T> >::iterator itList = aristas[minInd].begin();
+                for (; itList != aristas[minInd].end(); itList++) {
+                    std::pair<int,T> vertDes = *itList;
+                    std::pair<int, std::pair<int, T> > parN = std::make_pair(minInd, vertDes);
+                    aristasDisponibles.push(parN);
+                }
+            }
+        }
+    }
+    std::cout << std::endl;
+
+    return resultado;
 }
+
+// Connections

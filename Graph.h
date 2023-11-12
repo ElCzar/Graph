@@ -56,6 +56,9 @@ public:
     std::vector<T> DFS(T vert);
     std::vector<T> Prim(T vert);
     std::vector<T> Dijkstra(T vert);
+
+    // Connections
+
 };
 
 #include "Graph.hxx"
